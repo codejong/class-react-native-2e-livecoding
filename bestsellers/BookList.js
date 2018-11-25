@@ -8,7 +8,7 @@ import {
   FlatList,
   ActivityIndicator,
 } from 'react-native';
-
+import { connect } from 'react-redux';
 import BookItem from './BookItem';
 import NYT from './NYT';
 import NAVER from './NAVER';
@@ -38,6 +38,10 @@ class BookList extends Component {
         isFavorite={item.isFavorite}
         onPressFavorite={() => {
           console.log(item.key);
+          this.props.dispatch({
+            type: item.isFavorite ? 'REMOVE_FAVORITE' : 'ADD_FAVORITE',
+            book: item,
+          });
         }}
       />
     );
@@ -101,10 +105,14 @@ class BookList extends Component {
   };
 
   render() {
+    const listDataWithFavorite = this.state.data.map(book => ({
+      ...book,
+      isFavorite: this.props.favoriteBookKeys.indexOf(book.key) > -1,
+    }));
     return (
       <View style={styles.container}>
         <FlatList
-          data={this.state.data}
+          data={listDataWithFavorite}
           renderItem={this._renderItem}
           onEndReached={this._onEndReached}
           onRefresh={this._refreshData}
@@ -122,4 +130,9 @@ class BookList extends Component {
 
 const styles = StyleSheet.create({ container: { flex: 1, paddingTop: 22 } });
 
-export default BookList;
+function mapStateToProps(state) {
+  return {
+    favoriteBookKeys: state.favoriteList.map(book => book.key),
+  };
+}
+export default connect(mapStateToProps)(BookList);

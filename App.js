@@ -4,16 +4,16 @@ import { createBottomTabNavigator, createAppContainer } from 'react-navigation';
 import { Ionicons } from '@expo/vector-icons';
 
 import BookListScreen from './bestsellers/BookList';
+import FavoriteBookListScreen from './FavoriteBookListScreen';
 
-class FavoriteBookListScreen extends React.Component {
-  render() {
-    return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <Text>My Favorite</Text>
-      </View>
-    );
-  }
-}
+import { applyMiddleware, createStore } from 'redux';
+import { Provider, connect } from 'react-redux';
+import reducers from './reducers';
+
+import logger from 'redux-logger';
+
+const store = createStore(reducers, applyMiddleware(logger));
+
 class SettingsScreen extends React.Component {
   render() {
     return (
@@ -61,4 +61,14 @@ const TabNavigator = createBottomTabNavigator(
   }
 );
 
-export default createAppContainer(TabNavigator);
+const AppContainer = createAppContainer(TabNavigator);
+
+function App() {
+  return (
+    <Provider store={store}>
+      <AppContainer />
+    </Provider>
+  );
+}
+
+export default App;
