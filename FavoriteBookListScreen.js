@@ -1,18 +1,31 @@
 import React from 'react';
-import { Text, View } from 'react-native';
+import { FlatList, Text, View } from 'react-native';
 import { connect } from 'react-redux';
+import BookItem from './bestsellers/BookItem';
 import _ from 'lodash';
 
 class FavoriteBookListScreen extends React.Component {
+  _renderItem = ({ item }) => {
+    return (
+      <BookItem
+        coverURL={item.image}
+        title={item.title}
+        author={item.author}
+        isFavorite={true}
+        onPressFavorite={() => {
+          console.log(item.key);
+          this.props.dispatch({
+            type: 'REMOVE_FAVORITE',
+            book: item,
+          });
+        }}
+      />
+    );
+  };
   render() {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <Text>
-          {_.map(
-            this.props.list,
-            (book, index) => index + ': ' + book.title
-          ).join('\n\n')}
-        </Text>
+      <View style={{ flex: 1 }}>
+        <FlatList data={this.props.list} renderItem={this._renderItem} />
       </View>
     );
   }
