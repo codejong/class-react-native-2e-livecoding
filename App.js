@@ -9,10 +9,21 @@ import FavoriteBookListScreen from './FavoriteBookListScreen';
 import { applyMiddleware, createStore } from 'redux';
 import { Provider, connect } from 'react-redux';
 import reducers from './reducers';
+import { persistStore, persistReducer } from 'redux-persist';
+import storage from 'redux-persist/lib/storage'; // defaults to localStorage for web and AsyncStorage for react-native
+import { PersistGate } from 'redux-persist/integration/react';
+
+const persistConfig = {
+  key: 'root',
+  storage,
+};
+
+const persistedReducer = persistReducer(persistConfig, reducers);
 
 import logger from 'redux-logger';
 
-const store = createStore(reducers, applyMiddleware(logger));
+const store = createStore(persistedReducer, applyMiddleware(logger));
+let persistor = persistStore(store);
 
 class SettingsScreen extends React.Component {
   render() {
@@ -66,7 +77,9 @@ const AppContainer = createAppContainer(TabNavigator);
 function App() {
   return (
     <Provider store={store}>
-      <AppContainer />
+      <PersistGate loading={null} persistor={persistor}>
+        <AppContainer />
+      </PersistGate>
     </Provider>
   );
 }
