@@ -1,17 +1,17 @@
-import React, { Component } from "react";
-
+import React, { Component } from 'react';
+import { connect } from 'react-redux';
 import {
   StyleSheet,
   Text,
   View,
   Image,
   FlatList,
-  ActivityIndicator
-} from "react-native";
+  ActivityIndicator,
+} from 'react-native';
 
-import BookItem from "./BookItem";
-import NYT from "./NYT";
-import NAVER from "./NAVER";
+import BookItem from './BookItem';
+import NYT from './NYT';
+import NAVER from './NAVER';
 
 class BookList extends Component {
   constructor(props) {
@@ -20,7 +20,7 @@ class BookList extends Component {
       data: [],
       refreshing: false,
       loadingMore: false,
-      lastPage: 1
+      lastPage: 1,
     };
     this.onEndReachedCalledDuringMomentum = true;
   }
@@ -31,7 +31,18 @@ class BookList extends Component {
 
   _renderItem = ({ item }) => {
     return (
-      <BookItem coverURL={item.image} title={item.title} author={item.author} />
+      <BookItem
+        coverURL={item.image}
+        title={item.title}
+        author={item.author}
+        isFavorite={item.isFavorite}
+        onPressFavorite={() => {
+          this.props.dispatch({
+            type: 'ADD_FAVORITE',
+            book: item,
+          });
+        }}
+      />
     );
   };
 
@@ -46,14 +57,14 @@ class BookList extends Component {
 
   _refreshData = () => {
     this.setState({
-      refreshing: true
+      refreshing: true,
     });
 
     NAVER.fetchBooks().then(books => {
       this.setState({
         data: this._addKeysToBooks(books),
         refreshing: false,
-        lastPage: 1
+        lastPage: 1,
       });
     });
   };
@@ -62,7 +73,7 @@ class BookList extends Component {
     if (!this.onEndReachedCalledDuringMomentum) {
       console.log(distanceFromEnd);
       this.setState({
-        loadingMore: true
+        loadingMore: true,
       });
 
       NAVER.fetchBooks(this.state.lastPage + 1).then(books => {
@@ -70,7 +81,7 @@ class BookList extends Component {
         this.setState(state => ({
           data: state.data.concat(this._addKeysToBooks(books)),
           lastPage: state.lastPage + 1,
-          loadingMore: false
+          loadingMore: false,
         }));
       });
       this.onEndReachedCalledDuringMomentum = true;
@@ -83,8 +94,8 @@ class BookList extends Component {
         style={{
           height: 50,
           flex: 1,
-          alignItems: "center",
-          justifyContent: "center"
+          alignItems: 'center',
+          justifyContent: 'center',
         }}
       >
         <ActivityIndicator animating={this.state.loadingMore} size="small" />
@@ -93,10 +104,16 @@ class BookList extends Component {
   };
 
   render() {
+    const dataWithFav = this.state.data.map(book => {
+      return {
+        ...book,
+        isFavorite: this.props.favoriteKeys.indexOf(book.key) > -1,
+      };
+    });
     return (
       <View style={styles.container}>
         <FlatList
-          data={this.state.data}
+          data={dataWithFav}
           renderItem={this._renderItem}
           onEndReached={this._onEndReached}
           onRefresh={this._refreshData}
@@ -114,4 +131,9 @@ class BookList extends Component {
 
 const styles = StyleSheet.create({ container: { flex: 1, paddingTop: 22 } });
 
-export default BookList;
+function mapStateToProps(state) {
+  return {
+    favoriteKeys: state.favoriteList.map(book => book.key),
+  };
+}
+export default connect(mapStateToProps)(BookList);

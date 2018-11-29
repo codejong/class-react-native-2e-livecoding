@@ -1,21 +1,39 @@
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
+import { createBottomTabNavigator, createAppContainer } from 'react-navigation';
+import BookListScreen from './bestsellers/BookList';
+import { createStore, applyMiddleware } from 'redux';
+import { Provider } from 'react-redux';
+import MyFavoriteListScreen from './MyFavoriteList';
+import logger from 'redux-logger';
 
-export default class App extends React.Component {
+import reducers from './reducers';
+
+const myStore = createStore(reducers, applyMiddleware(logger));
+
+class SettingsScreen extends React.Component {
   render() {
     return (
-      <View style={styles.container}>
-        <Text>Open up App.js to start working on your app!</Text>
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <Text>Settings!</Text>
       </View>
     );
   }
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
+const TabNavigator = createBottomTabNavigator({
+  BookList: BookListScreen,
+  MyFavorite: MyFavoriteListScreen,
+  Settings: SettingsScreen,
 });
+
+const AppContainer = createAppContainer(TabNavigator);
+
+function AppWithRedux() {
+  return (
+    <Provider store={myStore}>
+      <AppContainer />
+    </Provider>
+  );
+}
+export default AppWithRedux;
